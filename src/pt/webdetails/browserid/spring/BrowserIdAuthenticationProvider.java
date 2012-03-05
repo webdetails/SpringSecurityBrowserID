@@ -24,7 +24,7 @@ import pt.webdetails.browserid.spring.authorities.UserDetailsWrapperAuthoritiesS
 public class BrowserIdAuthenticationProvider implements InitializingBean, AuthenticationProvider {
   
   private static String DEFAULT_AUTHENTICATION_SERVICE = "https://browserid.org/verify";
-  private static Log log = LogFactory.getLog(AuthenticationProvider.class);
+  private static Log log = LogFactory.getLog(BrowserIdAuthenticationProvider.class);
   
   private String verificationServiceUrl = DEFAULT_AUTHENTICATION_SERVICE; 
   
@@ -79,7 +79,7 @@ public class BrowserIdAuthenticationProvider implements InitializingBean, Authen
       String identity = response.getEmail();
       //get authorities
       GrantedAuthority[] grantedAuthorities = getAuthoritiesService().getAuthoritiesForUser(identity);
-      if(grantedAuthorities.length == 0){
+      if(grantedAuthorities == null || grantedAuthorities.length == 0){
         throw new BrowserIdAuthenticationException("No authorities granted to " + identity);
       }
       

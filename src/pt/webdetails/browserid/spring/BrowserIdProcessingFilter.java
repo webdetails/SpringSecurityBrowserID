@@ -5,6 +5,8 @@
 package pt.webdetails.browserid.spring;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,11 +31,11 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
 
   private static final String DEFAULT_FILTER_PROCESS_URL = "/j_spring_security_check";
   private static final String DEFAULT_ASSERTION_PARAMETER = "assertion";
-  private static final String DEFAULT_AUDIENCE_PARAMETER = "audience";
+//  private static final String DEFAULT_AUDIENCE_PARAMETER = "audience";
   
   private String verificationServiceUrl; 
   private String assertionParameterName = DEFAULT_ASSERTION_PARAMETER;
-  private String audienceParameterName = DEFAULT_AUDIENCE_PARAMETER;
+//  private String audienceParameterName = DEFAULT_AUDIENCE_PARAMETER;
   private int order;
   
   public String getAssertionParameterName() {
@@ -48,13 +50,13 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     this.assertionParameterName = assertionParameterName;
   }
 
-  public String getAudienceParameterName() {
-    return audienceParameterName;
-  }
-
-  public void setAudienceParameterName(String audienceParameterName) {
-    this.audienceParameterName = audienceParameterName;
-  }
+//  public String getAudienceParameterName() {
+//    return audienceParameterName;
+//  }
+//
+//  public void setAudienceParameterName(String audienceParameterName) {
+//    this.audienceParameterName = audienceParameterName;
+//  }
 
   public String getVerificationServiceUrl() {
     return verificationServiceUrl;
@@ -80,21 +82,35 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request) throws AuthenticationException {
     String browserIdAssertion = request.getParameter(getAssertionParameterName());
-    String assertionAudience = request.getParameter(getAudienceParameterName());
+//    String assertionAudience = request.getParameter(getAudienceParameterName());
     
     if(browserIdAssertion != null) {
      
       BrowserIdVerifier verifier = new BrowserIdVerifier(getVerificationServiceUrl());
       BrowserIdResponse response = null;
-        try {
-          response = verifier.verify(browserIdAssertion, assertionAudience);
-        } catch (HttpException e) {
-          throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
-        } catch (IOException e) {
-          throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
-        } catch (JSONException e){
-          throw new BrowserIdAuthenticationException("Could not parse response from verify service [" + verifier.getVerifyUrl() + "]", e);
-        }
+      
+      String audience  = request.getRequestURL().toString();
+      try {
+        URL url = new URL(audience);
+        audience = url.getHost();
+      } catch (MalformedURLException e) {
+        throw new BrowserIdAuthenticationException("Malformed request URL", e);
+      }
+      
+//      Assert.hasLength("Unable to determine hostname",audience);
+//      if(!StringUtils.equals(audience, assertionAudience)){
+//        logger.error("Server and client-side audience don't match");
+//      }
+      
+      try {
+        response = verifier.verify(browserIdAssertion, audience);
+      } catch (HttpException e) {
+        throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
+      } catch (IOException e) {
+        throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
+      } catch (JSONException e){
+        throw new BrowserIdAuthenticationException("Could not parse response from verify service [" + verifier.getVerifyUrl() + "]", e);
+      }
 
       if(response != null){
         if(response.getStatus() == BrowserIdResponse.Status.OK){
@@ -123,7 +139,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     super.afterPropertiesSet();
     //request parameters
     Assert.hasLength(getAssertionParameterName(), "assertionParameterName cannot be empty.");
-    Assert.hasLength(getAudienceParameterName(), "audienceParameterName cannot be empty.");
+//    Assert.hasLength(getAudienceParameterName(), "audienceParameterName cannot be empty.");
     
     //check URL
     Assert.hasLength(getVerificationServiceUrl());

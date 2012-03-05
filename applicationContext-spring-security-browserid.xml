@@ -9,9 +9,8 @@
   
   <!-- performs the browserid authentication based on an assertion sent from the client; added to the filter chain-->
   <bean id="browserIdProcessingFilter" class="pt.webdetails.browserid.spring.BrowserIdProcessingFilter">
-    <!-- parameter names that are sent by the UI -->
+    <!-- parameter name sent by the UI -->
     <property name="assertionParameterName" value="assertion"/>
-    <property name="audienceParameterName" value="audience"/>
     <!-- target url for UI login post, make sure to sync with client -->
     <property name="filterProcessesUrl" value="/browserid_security_check" />
     <!-- BrowserID verification service that will be used for assertion verification -->
