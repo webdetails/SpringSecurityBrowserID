@@ -7,25 +7,28 @@ This project provides [BrowserID](http://browserid.org) login integration with t
 
 ### Simple usage example in [Pentaho BI](http://community.pentaho.com):
 
-1. add the jar from this project to your webapp (ex.:server/webapps/pentaho/WEB-INF/lib)
+1. Build the project
+    `ant clean dist`
 
-2. adapt applicationContext-spring-security-browserid.xml to your needs (as is should work with default hibernate configuration)
+2. Add the jar from dist/, and httpcore and httpclient from lib/ (remove older version of httpcore if present) to your webapp (ex.:server/webapps/pentaho/WEB-INF/lib)
 
-3. move it to the system dir and add it to pentaho-spring-beans.xml
+3. Adapt applicationContext-spring-security-browserid.xml to your needs (as is should work with default hibernate configuration)
 
-4. in applicationContext-spring-security.xml make sure the BrowserIdProcessingFilter bean is included in FilterChainProxy and BrowserIdAuthenticationProvider is in the AuthenticationManager's provider list
+4. Move it to the system dir and add it to pentaho-spring-beans.xml
 
-5. change/create custom PUCLogin.jsp:
+5. In applicationContext-spring-security.xml make sure the BrowserIdProcessingFilter bean is included in FilterChainProxy and BrowserIdAuthenticationProvider is in the AuthenticationManager's provider list
 
-5.1 Import BrowserID client-side code:
+6. Change/create custom PUCLogin.jsp:
+
+6.1 Import BrowserID client-side code:
 
       <script src="https://browserid.org/include.js" type="text/javascript"></script>
 
-5.2 Add a login button:
+6.2 Add a login button:
 
       <input type="image" src="https://browserid.org/i/sign_in_green.png" alt="BrowserID login"  onclick="doBrowserIdLogin();">
 
-5.3 Add client code to get an assertion and use it for authentication :
+6.3 Add client code to get an assertion and use it for authentication :
 
     <script type="text/javascript">
 
