@@ -15,6 +15,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.springframework.security.Authentication;
 import org.springframework.security.AuthenticationException;
@@ -31,11 +32,11 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
 
   private static final String DEFAULT_FILTER_PROCESS_URL = "/j_spring_security_check";
   private static final String DEFAULT_ASSERTION_PARAMETER = "assertion";
-//  private static final String DEFAULT_AUDIENCE_PARAMETER = "audience";
   
   private String verificationServiceUrl; 
   private String assertionParameterName = DEFAULT_ASSERTION_PARAMETER;
-//  private String audienceParameterName = DEFAULT_AUDIENCE_PARAMETER;
+  private String hostname;
+
   private int order;
   
   public String getAssertionParameterName() {
@@ -50,13 +51,6 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     this.assertionParameterName = assertionParameterName;
   }
 
-//  public String getAudienceParameterName() {
-//    return audienceParameterName;
-//  }
-//
-//  public void setAudienceParameterName(String audienceParameterName) {
-//    this.audienceParameterName = audienceParameterName;
-//  }
 
   public String getVerificationServiceUrl() {
     return verificationServiceUrl;
@@ -65,8 +59,17 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
   public void setVerificationServiceUrl(String verificationServiceUrl) {
     this.verificationServiceUrl = verificationServiceUrl;
   }
-
   
+  
+  public String getHostname() {
+    return hostname;
+  }
+
+  public void setHostname(String hostname) {
+    this.hostname = hostname;
+  }
+  
+
   @Override
   public int getOrder() {
     return order;
@@ -90,11 +93,19 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
       BrowserIdResponse response = null;
       
       String audience  = request.getRequestURL().toString();
+      String referer = request.getHeader("Referer");
+      //strip to host names
       try {
-        URL url = new URL(audience);
-        audience = url.getHost();
+        URL audienceUrl = new URL(audience);
+        audience = audienceUrl.getHost();
+        URL refererUrl = new URL(referer);
+        referer = refererUrl.getHost();
       } catch (MalformedURLException e) {
-        throw new BrowserIdAuthenticationException("Malformed request URL", e);
+        throw new BrowserIdAuthenticationException("Request contains malformed URL", e);
+      }
+      
+      if(!StringUtils.equals(audience, audience) || StringUtils.isEmpty(referer)){
+        throw new BrowserIdAuthenticationException("Referer mismatch");
       }
       
 //      Assert.hasLength("Unable to determine hostname",audience);
