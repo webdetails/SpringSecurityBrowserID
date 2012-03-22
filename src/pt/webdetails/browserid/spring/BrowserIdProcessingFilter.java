@@ -6,17 +6,14 @@ package pt.webdetails.browserid.spring;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpHost;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.StringUtils;
-import org.json.JSONException;
+import org.apache.http.HttpException;
 import org.springframework.security.Authentication;
 import org.springframework.security.AuthenticationException;
 import org.springframework.security.ui.AbstractProcessingFilter;
@@ -85,7 +82,6 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request) throws AuthenticationException {
     String browserIdAssertion = request.getParameter(getAssertionParameterName());
-//    String assertionAudience = request.getParameter(getAudienceParameterName());
     
     if(browserIdAssertion != null) {
      
@@ -107,20 +103,13 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
       if(!StringUtils.equals(audience, audience) || StringUtils.isEmpty(referer)){
         throw new BrowserIdAuthenticationException("Referer mismatch");
       }
-      
-//      Assert.hasLength("Unable to determine hostname",audience);
-//      if(!StringUtils.equals(audience, assertionAudience)){
-//        logger.error("Server and client-side audience don't match");
-//      }
-      
+
       try {
         response = verifier.verify(browserIdAssertion, audience);
       } catch (HttpException e) {
         throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
       } catch (IOException e) {
         throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
-      } catch (JSONException e){
-        throw new BrowserIdAuthenticationException("Could not parse response from verify service [" + verifier.getVerifyUrl() + "]", e);
       }
 
       if(response != null){
@@ -150,16 +139,11 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     super.afterPropertiesSet();
     //request parameters
     Assert.hasLength(getAssertionParameterName(), "assertionParameterName cannot be empty.");
-//    Assert.hasLength(getAudienceParameterName(), "audienceParameterName cannot be empty.");
-    
     //check URL
     Assert.hasLength(getVerificationServiceUrl());
-    try{
-      HttpHost host = new HttpHost(new URI(getVerificationServiceUrl(), false));
-      Assert.isTrue(host.getProtocol().isSecure(), "verificationServiceUrl does not use a secure protocol");
-    } catch (URIException e){
-      throw new IllegalArgumentException("verificationServiceUrl is not a valid URI",e);
-    }
+
+    URL url = (new URI(getVerificationServiceUrl())).toURL();//throws URISyntaxExceptio, MalformedURLException
+    Assert.isTrue(StringUtils.equalsIgnoreCase(url.getProtocol(), "https"), "verificationServiceUrl does not use a secure protocol");
   }
   
   @Override

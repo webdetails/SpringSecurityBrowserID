@@ -13,7 +13,8 @@
  <!-- base internal -->
     <dependency org="commons-lang" name="commons-lang" rev="${dep.commons-lang.rev}"/>
     <dependency org="commons-logging" name="commons-logging" rev="${dep.commons-logging.rev}" transitive="false"/>
-    <dependency org="commons-httpclient" name="commons-httpclient" rev="${dep.commons-httpclient.rev}" transitive="false" />
+    <dependency org="commons-io" name="commons-io" rev="2.1"/>
+    <dependency org="org.apache.httpcomponents" name="httpclient" rev="${dep.commons-httpclient.rev}" />
     
     <dependency org="org.json" name="json" rev="${dep.json.rev}" transitive="false"/>
 
