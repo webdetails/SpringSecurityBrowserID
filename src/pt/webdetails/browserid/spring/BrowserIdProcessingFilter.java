@@ -100,7 +100,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
         throw new BrowserIdAuthenticationException("Request contains malformed URL", e);
       }
       
-      if(!StringUtils.equals(audience, audience) || StringUtils.isEmpty(referer)){
+      if(!StringUtils.equals(audience, referer) || StringUtils.isEmpty(referer)){
         throw new BrowserIdAuthenticationException("Referer mismatch");
       }
 
@@ -141,6 +141,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     Assert.hasLength(getAssertionParameterName(), "assertionParameterName cannot be empty.");
     //check URL
     Assert.hasLength(getVerificationServiceUrl());
+    //check hostname
 
     URL url = (new URI(getVerificationServiceUrl())).toURL();//throws URISyntaxExceptio, MalformedURLException
     Assert.isTrue(StringUtils.equalsIgnoreCase(url.getProtocol(), "https"), "verificationServiceUrl does not use a secure protocol");
