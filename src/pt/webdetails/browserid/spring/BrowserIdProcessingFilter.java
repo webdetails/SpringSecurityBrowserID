@@ -33,6 +33,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
   private String verificationServiceUrl; 
   private String assertionParameterName = DEFAULT_ASSERTION_PARAMETER;
   private String hostname;
+  private String hostnameInitParameter;
 
   private int order;
   
@@ -64,6 +65,14 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
 
   public void setHostname(String hostname) {
     this.hostname = hostname;
+  }
+  
+  public String getHostnameInitParameter() {
+    return hostnameInitParameter;
+  }
+
+  public void setHostnameInitParameter(String hostnameInitParameter) {
+    this.hostnameInitParameter = hostnameInitParameter;
   }
   
 
@@ -103,6 +112,9 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
       if(!StringUtils.equals(audience, referer) || StringUtils.isEmpty(referer)){
         throw new BrowserIdAuthenticationException("Referer mismatch");
       }
+      if(!isAudienceOK(audience, request)) {
+        throw new BrowserIdAuthenticationException("Audience mismatch");
+      }
 
       try {
         response = verifier.verify(browserIdAssertion, audience);
@@ -127,10 +139,39 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     //may not be a BrowserID authentication
     return null;
   }
+  
+  public boolean isAudienceOK(String audience, HttpServletRequest request){
+    String host = getHost(request);
+    if(!StringUtils.isEmpty(host)){
+      return StringUtils.equals(audience, host);
+    }
+    
+    return false;
+  }
 
   @Override
   public String getDefaultFilterProcessesUrl() {
     return DEFAULT_FILTER_PROCESS_URL;
+  }
+  
+  
+  private String getHost( HttpServletRequest request ){
+    String host = null;
+    if(!StringUtils.isEmpty(hostname)){
+      host = hostname;
+    }else if(!StringUtils.isEmpty(hostnameInitParameter)){
+      host = request.getSession().getServletContext().getInitParameter(hostnameInitParameter);
+    }
+    if(StringUtils.contains(host, "/")){
+      //base url can be set as domain name or full url
+      try {
+        URL baseUrl = new URL(host);
+        host = baseUrl.getHost();
+      } catch (MalformedURLException e) {
+        return null;
+      }
+    }
+    return host;
   }
   
   
@@ -142,7 +183,8 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     //check URL
     Assert.hasLength(getVerificationServiceUrl());
     //check hostname
-
+    Assert.isTrue(!StringUtils.isEmpty(hostname) || !StringUtils.isEmpty(hostnameInitParameter), "either hostname or hostnameInitParameter must be set");
+    
     URL url = (new URI(getVerificationServiceUrl())).toURL();//throws URISyntaxExceptio, MalformedURLException
     Assert.isTrue(StringUtils.equalsIgnoreCase(url.getProtocol(), "https"), "verificationServiceUrl does not use a secure protocol");
   }

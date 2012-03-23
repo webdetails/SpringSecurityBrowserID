@@ -19,6 +19,11 @@
     <property name="authenticationManager">
       <ref bean="authenticationManager" />
     </property>
+    <!--either hostname or hostnameInitParameter must be set -->
+    <!-- the audience used to verify the auth request -->
+    <!--<property name="hostname" value="my.example.domain"/>-->
+    <!-- audience defined as context parameter from this webapp's web.xml  -->
+    <property name="hostnameInitParameter" value="base-url"/>
     <!--  -->
     <property name="defaultTargetUrl" value="/Home" />
     <!--  -->
