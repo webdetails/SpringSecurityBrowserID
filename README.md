@@ -16,7 +16,7 @@ This project provides [BrowserID](http://browserid.org) login integration with t
 
 4. Move it to the system dir and add it to pentaho-spring-beans.xml
 
-5. In applicationContext-spring-security.xml make sure the BrowserIdProcessingFilter bean is included in FilterChainProxy and BrowserIdAuthenticationProvider is in the AuthenticationManager's provider list
+5. In applicationContext-spring-security.xml make sure the CsrfTokenCreationFilter and BrowserIdProcessingFilter beans are included in FilterChainProxy and BrowserIdAuthenticationProvider is in the AuthenticationManager's provider list
 
 6. Change/create custom PUCLogin.jsp:
 
