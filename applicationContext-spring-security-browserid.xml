@@ -28,6 +28,16 @@
     <property name="defaultTargetUrl" value="/Home" />
     <!--  -->
     <property name="authenticationFailureUrl" value="/Login?login_error=1" />
+    <!-- checkUID can be used with CsrfTokenCreationFilter to offer some CSRF login protection; 
+      uidSessionName must match CsrfTokenCreationFilter's token, uidParamName is what is sent from the client -->
+    <property name="checkUID" value="true"/>
+    <property name="uidSessionName" value="tuid"/>
+    <property name="uidParamName" value="tuid"/>
+  </bean>
+  
+  <!-- adds an uuid to new session; must be added to filter chain -->
+  <bean id="tuidFilter" class="pt.webdetails.browserid.spring.CsrfTokenCreationFilter">
+    <property name="csrfTokenName" value="tuid"/>
   </bean>
   
   <!-- this AuthenticationProvider grants authorities to an authenticated user; added to authenticationManager's providers list-->

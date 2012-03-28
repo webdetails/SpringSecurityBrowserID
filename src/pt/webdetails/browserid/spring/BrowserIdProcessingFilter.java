@@ -34,6 +34,9 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
   private String assertionParameterName = DEFAULT_ASSERTION_PARAMETER;
   private String hostname;
   private String hostnameInitParameter;
+  private boolean checkUID=true;
+  private String uidSessionName = "suuid";
+  private String uidParamName = uidSessionName;
 
   private int order;
   
@@ -76,6 +79,48 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
   }
   
 
+  /**
+   * @return whether to check for a session uid token
+   */
+  public boolean isCheckUID() {
+    return checkUID;
+  }
+
+  /**
+   * @param checkUID whether to check for a session uid token
+   */
+  public void setCheckUID(boolean checkUID) {
+    this.checkUID = checkUID;
+  }
+
+  /**
+   * @return name of the session String token to check if {@link #isCheckUID()}
+   */
+  public String getUidSessionName() {
+    return uidSessionName;
+  }
+
+  /**
+   * @param uidSessionName name of the session String token to check if {@link #isCheckUID()}
+   */
+  public void setUidSessionName(String uidSessionName) {
+    this.uidSessionName = uidSessionName;
+  }
+
+  /**
+   * @return name of the param to check against {@link #getUidSessionName()}
+   */
+  public String getUidParamName() {
+    return uidParamName;
+  }
+
+  /**
+   * param uidParamName name of the param to check against {@link #getUidSessionName()}
+   */
+  public void setUidParamName(String uidParamName) {
+    this.uidParamName = uidParamName;
+  }
+
   @Override
   public int getOrder() {
     return order;
@@ -114,6 +159,14 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
       }
       if(!isAudienceOK(audience, request)) {
         throw new BrowserIdAuthenticationException("Audience mismatch");
+      }
+      
+      if(checkUID){
+        String tuid = (String) request.getSession().getAttribute(uidSessionName);
+        String pTuid = request.getParameter(uidParamName);
+        if(tuid == null || !tuid.equals(pTuid)){
+          throw new BrowserIdAuthenticationException("Session UID mismatch");
+        }
       }
 
       try {

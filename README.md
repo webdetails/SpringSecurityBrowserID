@@ -38,9 +38,9 @@ This project provides [BrowserID](http://browserid.org) login integration with t
         }
         
         jQuery.ajax({
-            type: "POST",
-            url: "browserid_security_check",
-            data: "assertion=" + assertion,
+            type: 'POST',
+            url: 'browserid_security_check',
+            data: 'assertion=' + assertion + '&tuid=<%=request.getSession().getAttribute("tuid")%>',
             success:function(data,textStatus,jqXHR){
               bounceToReturnLocation();
             },
