@@ -8,7 +8,8 @@ This project provides [BrowserID](http://browserid.org) login integration with t
 ### Simple usage example in [Pentaho BI](http://community.pentaho.com):
 
 1. Build the project
-    `ant clean dist`
+
+	`ant clean dist`
 
 2. Add the jar from dist/, and httpcore and httpclient from lib/ (remove older version of httpcore if present) to your webapp (ex.:server/webapps/pentaho/WEB-INF/lib)
 

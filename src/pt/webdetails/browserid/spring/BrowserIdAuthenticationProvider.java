@@ -29,7 +29,6 @@ public class BrowserIdAuthenticationProvider implements InitializingBean, Authen
   private String verificationServiceUrl = DEFAULT_AUTHENTICATION_SERVICE; 
   
   private GrantedAuthoritiesService authoritiesService;
-//  private UserDetailsService userDetailsService;
 
   public String getVerificationServiceUrl() {
     return verificationServiceUrl;
@@ -43,10 +42,7 @@ public class BrowserIdAuthenticationProvider implements InitializingBean, Authen
     this.verificationServiceUrl = verificationServiceUrl;
   }
 
-//  public UserDetailsService getUserDetailsService() {
-//    return userDetailsService;
-//  }
-//
+
   public void setUserDetailsService(UserDetailsService userDetailsService) {
     
     this.authoritiesService = userDetailsService != null ? new UserDetailsWrapperAuthoritiesService(userDetailsService) : null ;
@@ -71,12 +67,11 @@ public class BrowserIdAuthenticationProvider implements InitializingBean, Authen
 
     BrowserIdAuthentication browserIdAuth = (BrowserIdAuthentication) authentication;
     
-    BrowserIdResponse response = //browserIdAuth.getVerificationResponse() == null ? 
-                                 //verifyAuthentication(browserIdAuth):
-                                 browserIdAuth.getVerificationResponse();
+    BrowserIdResponse response = browserIdAuth.getVerificationResponse();
         
     if(response != null && response.getStatus() == BrowserIdResponse.Status.OK ){
       String identity = response.getEmail();
+      
       //get authorities
       GrantedAuthority[] grantedAuthorities = getAuthoritiesService().getAuthoritiesForUser(identity);
       if(grantedAuthorities == null || grantedAuthorities.length == 0){
@@ -96,33 +91,6 @@ public class BrowserIdAuthenticationProvider implements InitializingBean, Authen
     }
   }
   
-
-
-//  /**
-//   * @param browserIdAuth non-authenticated token
-//   * @return
-//   */
-//  private BrowserIdResponse verifyAuthentication(BrowserIdAuthentication browserIdAuth) {
-//    
-//    BrowserIdVerifier verifier = new BrowserIdVerifier(getVerificationServiceUrl());
-//    
-//    BrowserIdResponse response = null;
-//    try {
-//      response = verifier.verify(browserIdAuth.getAssertion(), browserIdAuth.getAudience());
-//    } catch (HttpException e) {
-//      throw new BrowserIdAuthenticationException("Problem contacting verification service.", e);
-//    } catch (IOException e) {
-//      throw new BrowserIdAuthenticationException("Failed to parse response from verification service.", e);
-//    } catch (JSONException e) {
-//      throw new BrowserIdAuthenticationException("Failed to parse response from verification service.");
-//    }
-//    
-//    if(response == null){
-//      throw new BrowserIdAuthenticationException("Recieved no valid response from verification service.");
-//    }
-//    return response;
-//  }
-
 
   @SuppressWarnings("rawtypes")
   @Override

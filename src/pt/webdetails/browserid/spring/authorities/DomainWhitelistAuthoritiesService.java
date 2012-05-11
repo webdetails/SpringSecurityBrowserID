@@ -15,23 +15,15 @@ import org.springframework.security.GrantedAuthorityImpl;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-
 /**
  * Will grant authorities 
  */
 public class DomainWhitelistAuthoritiesService implements InitializingBean, GrantedAuthoritiesService {
 
+  private static final String ANY_DOMAIN = "*";
+  
   private Map<String,GrantedAuthority[]> domainMap;
   
-//  public Map<String, GrantedAuthority[]> getDomainMap() {
-//    return domainMap;
-//  }
-
-//  public void setDomainMap(Map<String, GrantedAuthority[]> domainMap) {
-//    this.domainMap = domainMap;
-//  }
-  
-
   
   /**
    * 
@@ -63,7 +55,11 @@ public class DomainWhitelistAuthoritiesService implements InitializingBean, Gran
     String[] emailParts = StringUtils.split(email, "@");
     if(emailParts == null) throw new IllegalArgumentException("unparsable email");
     String domain = emailParts[1];
-    return domainMap.get(domain);
+    GrantedAuthority[] res = domainMap.get(domain);
+    if(res == null) {
+      return domainMap.get(ANY_DOMAIN);
+    }
+    return res;
   }
 
   @Override

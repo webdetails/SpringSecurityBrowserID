@@ -238,7 +238,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     //check hostname
     Assert.isTrue(!StringUtils.isEmpty(hostname) || !StringUtils.isEmpty(hostnameInitParameter), "either hostname or hostnameInitParameter must be set");
     
-    URL url = (new URI(getVerificationServiceUrl())).toURL();//throws URISyntaxExceptio, MalformedURLException
+    URL url = (new URI(getVerificationServiceUrl())).toURL();
     Assert.isTrue(StringUtils.equalsIgnoreCase(url.getProtocol(), "https"), "verificationServiceUrl does not use a secure protocol");
   }
   
