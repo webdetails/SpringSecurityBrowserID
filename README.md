@@ -3,7 +3,7 @@ Spring Security BrowserID Login
 
 ### Description
 
-This project provides [BrowserID](http://browserid.org) login integration with the [Spring framework](http://www.springsource.org)
+This project provides [BrowserID](https://login.persona.org) login integration with the [Spring framework](http://www.springsource.org)
 
 ### Simple usage example in [Pentaho BI](http://community.pentaho.com):
 
@@ -23,11 +23,11 @@ This project provides [BrowserID](http://browserid.org) login integration with t
 
 6.1 Import BrowserID client-side code:
 
-      <script src="https://browserid.org/include.js" type="text/javascript"></script>
+      <script src="https://login.persona.org/include.js" type="text/javascript"></script>
 
-6.2 Add a login button:
+6.2 Add a [login button](https://developer.mozilla.org/en-US/docs/persona/branding):
 
-      <input type="image" src="https://browserid.org/i/sign_in_green.png" alt="BrowserID login"  onclick="doBrowserIdLogin();">
+      <input type="image" src="sign_in.png" alt="BrowserID login"  onclick="doBrowserIdLogin();">
 
 6.3 Add client code to get an assertion and use it for authentication :
 

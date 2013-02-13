@@ -30,7 +30,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
  */
 public class BrowserIdVerifier {
 
-  private static String DEFAULT_VERIFY_URL = "https://browserid.org/verify";
+  private static String DEFAULT_VERIFY_URL = "https://verifier.login.persona.org/verify";
   private static final String ENCODING = "UTF-8";
   
   private String url = DEFAULT_VERIFY_URL;
@@ -39,7 +39,7 @@ public class BrowserIdVerifier {
   
   /**
    * 
-   * @param verifyUrl The URL that performs the verification. Defaults to <code>https://browserid.org/verify</code>.
+   * @param verifyUrl The URL that performs the verification. Defaults to <code>https://verifier.login.persona.org/verify</code>.
    */
   public BrowserIdVerifier(String verifyUrl){
     verifyUrl = StringUtils.trim(verifyUrl);

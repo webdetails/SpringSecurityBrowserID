@@ -14,7 +14,7 @@
     <!-- target url for UI login post, make sure to sync with client -->
     <property name="filterProcessesUrl" value="/browserid_security_check" />
     <!-- BrowserID verification service that will be used for assertion verification -->
-    <property name="verificationServiceUrl" value="https://browserid.org/verify"/>
+    <property name="verificationServiceUrl" value="https://verifier.login.persona.org/verify"/>
     <!-- authentication manager for processing the token and granting authorities -->
     <property name="authenticationManager">
       <ref bean="authenticationManager" />
