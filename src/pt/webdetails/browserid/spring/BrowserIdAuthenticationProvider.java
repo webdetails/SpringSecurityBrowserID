@@ -23,7 +23,7 @@ import pt.webdetails.browserid.spring.authorities.UserDetailsWrapperAuthoritiesS
  */
 public class BrowserIdAuthenticationProvider implements InitializingBean, AuthenticationProvider {
   
-  private static String DEFAULT_AUTHENTICATION_SERVICE = "https://browserid.org/verify";
+  private static String DEFAULT_AUTHENTICATION_SERVICE = "https://verifier.login.persona.org/verify";
   private static Log log = LogFactory.getLog(BrowserIdAuthenticationProvider.class);
   
   private String verificationServiceUrl = DEFAULT_AUTHENTICATION_SERVICE; 
