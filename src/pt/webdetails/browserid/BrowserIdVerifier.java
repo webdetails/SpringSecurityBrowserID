@@ -6,24 +6,27 @@ package pt.webdetails.browserid;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
 
-import org.json.JSONException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONException;
 
 /**
  * Simple client for a BrowserID verify call.
@@ -32,24 +35,25 @@ public class BrowserIdVerifier {
 
   private static String DEFAULT_VERIFY_URL = "https://verifier.login.persona.org/verify";
   private static final String ENCODING = "UTF-8";
+  private static Log log = LogFactory.getLog(BrowserIdVerifier.class);
   
   private String url = DEFAULT_VERIFY_URL;
   private ResponseHandler<BrowserIdResponse> responseHandler;
-  private HttpClient client;
+  private String proxyUrl;
   
   /**
    * 
    * @param verifyUrl The URL that performs the verification. Defaults to <code>https://verifier.login.persona.org/verify</code>.
    */
-  public BrowserIdVerifier(String verifyUrl){
+  public BrowserIdVerifier(String verifyUrl, String proxyUrl){
     verifyUrl = StringUtils.trim(verifyUrl);
     this.url = StringUtils.isEmpty(verifyUrl) ?  DEFAULT_VERIFY_URL : verifyUrl;
     this.responseHandler = new BrowserIdResponseHandler();
-    this.client = getNewHttpClient();
+    this.proxyUrl = proxyUrl;
   }
   
   public BrowserIdVerifier(){
-    this(null);
+    this(null, null);
   }
   
   /**
@@ -70,8 +74,9 @@ public class BrowserIdVerifier {
    * @throws JSONException if the result cannot be parsed as JSON markup
    */
   public BrowserIdResponse verify(String assertion, String audience) throws HttpException, IOException {
-       
+    HttpClient client = getNewHttpClient();
     HttpPost post = getPostMethod(url, assertion, audience);
+    log.debug("connecting to url="+url);
     return client.execute(post, responseHandler);
   }
   
@@ -80,21 +85,26 @@ public class BrowserIdVerifier {
   }
   
   private HttpClient getNewHttpClient(){
-    HttpClient client = new DefaultHttpClient();
-    //force hostname verification
-    SSLSocketFactory socketFactory;
+	DefaultHttpClient client = new DefaultHttpClient();
     try {
+      //force hostname verification
+      SSLSocketFactory socketFactory;
       SSLContext context = SSLContext.getInstance(SSLSocketFactory.TLS);
       //nulls here will use defaults
       context.init(null, null, null); 
       socketFactory =new SSLSocketFactory(context, SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
-    } catch (KeyManagementException e) {
+      Scheme httpsStrict = new Scheme("https", 443, socketFactory);
+      client.getConnectionManager().getSchemeRegistry().register(httpsStrict);
+      //use proxy if defined
+      if (proxyUrl != null) {
+    	URL url = new URL(proxyUrl);
+        HttpHost proxyHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
+        log.debug("Using proxy " + proxyHost);
+        client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxyHost);
+      }
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    Scheme httpsStrict = new Scheme("https", 443, socketFactory);
-    client.getConnectionManager().getSchemeRegistry().register(httpsStrict);
     return client;
   }
   

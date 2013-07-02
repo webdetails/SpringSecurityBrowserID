@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpException;
 import org.springframework.security.Authentication;
 import org.springframework.security.AuthenticationException;
@@ -29,6 +31,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
 
   private static final String DEFAULT_FILTER_PROCESS_URL = "/j_spring_security_check";
   private static final String DEFAULT_ASSERTION_PARAMETER = "assertion";
+  private static Log log = LogFactory.getLog(BrowserIdProcessingFilter.class);
   
   private String verificationServiceUrl; 
   private String assertionParameterName = DEFAULT_ASSERTION_PARAMETER;
@@ -37,6 +40,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
   private boolean checkUID=true;
   private String uidSessionName = "suuid";
   private String uidParamName = uidSessionName;
+  private String proxyUrl;
 
   private int order;
   
@@ -78,6 +82,13 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     this.hostnameInitParameter = hostnameInitParameter;
   }
   
+  public void setProxyUrl(String proxyHost) {
+    this.proxyUrl = proxyHost;
+  }
+
+  public String getProxyUrl() {
+    return proxyUrl;
+  }
 
   /**
    * @return whether to check for a session uid token
@@ -139,7 +150,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
     
     if(browserIdAssertion != null) {
      
-      BrowserIdVerifier verifier = new BrowserIdVerifier(getVerificationServiceUrl());
+      BrowserIdVerifier verifier = new BrowserIdVerifier(getVerificationServiceUrl(), getProxyUrl());
       BrowserIdResponse response = null;
       
       String audience  = request.getRequestURL().toString();
@@ -155,9 +166,11 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
       }
       
       if(!StringUtils.equals(audience, referer) || StringUtils.isEmpty(referer)){
+        log.debug("Referer mismatch");
         throw new BrowserIdAuthenticationException("Referer mismatch");
       }
       if(!isAudienceOK(audience, request)) {
+        log.debug("Audience mismatch");
         throw new BrowserIdAuthenticationException("Audience mismatch");
       }
       
@@ -165,6 +178,7 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
         String tuid = (String) request.getSession().getAttribute(uidSessionName);
         String pTuid = request.getParameter(uidParamName);
         if(tuid == null || !tuid.equals(pTuid)){
+          log.debug("Session UID mismatch");
           throw new BrowserIdAuthenticationException("Session UID mismatch");
         }
       }
@@ -172,8 +186,10 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
       try {
         response = verifier.verify(browserIdAssertion, audience);
       } catch (HttpException e) {
+        log.debug("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
         throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
       } catch (IOException e) {
+        log.debug("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
         throw new BrowserIdAuthenticationException("Error calling verify service [" + verifier.getVerifyUrl() + "]", e);
       }
 
@@ -184,10 +200,14 @@ public class BrowserIdProcessingFilter extends AbstractProcessingFilter {
           return getAuthenticationManager().authenticate(token);
         }
         else {
+          log.debug("BrowserID verification failed, reason: " + response.getReason());
           throw new BrowserIdAuthenticationException("BrowserID verification failed, reason: " + response.getReason());
         }
       }
-      else throw new BrowserIdAuthenticationException("Verification yielded null response");
+      else {
+    	  log.debug("Verification yielded null response");
+    	  throw new BrowserIdAuthenticationException("Verification yielded null response");
+      }
     }
     //may not be a BrowserID authentication
     return null;
